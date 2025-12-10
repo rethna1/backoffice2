@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>FinTrust Mini Back Office</title>
+
+<!-- Firebase Compat SDK (WORKS IN BLOGGER) -->
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f6f6f6;
+    padding: 15px;
+  }
+  h2 {
+    text-align: center;
+    color: #2e7d32;
+  }
+  .card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+  }
+  input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+  button {
+    width: 100%;
+    padding: 12px;
+    background: #2e7d32;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .client-card {
+    background: #e8f5e9;
+    border-left: 4px solid #2e7d32;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+</style>
+
+</head>
+<body>
+
+<h2>FinTrust Mini Back Office</h2>
+
+<div class="card">
+  <h3>Add Client</h3>
+  <input id="name" placeholder="Client Name" />
+  <input id="mobile" placeholder="Mobile Number" />
+  <button onclick="addClient()">Add Client</button>
+</div>
+
+<div class="card">
+  <h3>Client List</h3>
+  <div id="clientList">Loading...</div>
+</div>
+
+<script>
+  // FIREBASE CONFIG
+  const firebaseConfig = {
+    apiKey: "AIzaSyBAqXbUhWVk7yQKkbdkOjf8s7NrsNANuB4",
+    authDomain: "fintrust-back-office.firebaseapp.com",
+    projectId: "fintrust-back-office",
+    storageBucket: "fintrust-back-office.firebasestorage.app",
+    messagingSenderId: "61309384042",
+    appId: "1:61309384042:web:f1c1f230596bf783936113"
+  };
+
+  // INIT
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // ADD CLIENT
+  function addClient() {
+    const name = document.getElementById("name").value.trim();
+    const mobile = document.getElementById("mobile").value.trim();
+
+    if (!name || !mobile) {
+      alert("Enter name & mobile");
+      return;
+    }
+
+    db.collection("clients")
+      .add({ name, mobile, created: new Date() })
+      .then(() => {
+        alert("Client added!");
+        document.getElementById("name").value = "";
+        document.getElementById("mobile").value = "";
+        loadClients();
+      })
+      .catch((e) => alert(e.message));
+  }
+
+  // LOAD CLIENTS
+  function loadClients() {
+    db.collection("clients")
+      .orderBy("created", "desc")
+      .get()
+      .then((snapshot) => {
+        let html = "";
+        snapshot.forEach((doc) => {
+          const c = doc.data();
+          html += `
+            <div class="client-card">
+              <b>${c.name}</b><br>
+              📞 ${c.mobile}
+            </div>
+          `;
+        });
+        document.getElementById("clientList").innerHTML = html || "No clients added.";
+      });
+  }
+
+  // INITIAL LOAD
+  loadClients();
+</script>
+
+</body>
+</html>
